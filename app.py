@@ -1,7 +1,8 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from googleapiclient.discovery import build
 import os
 from dotenv import load_dotenv
+
 
 load_dotenv()
 app = Flask(__name__)
@@ -10,26 +11,42 @@ youtube = build('youtube', 'v3', developerKey=os.environ.get('youtube_api_data_v
 
 @app.route('/test', methods=['GET'])
 def test():
+    user_input = request.args.get('q', '') # User input from the Search Box
+
+    ## YouTube request
     req = youtube.search().list(
         part='snippet',
-        q='Python programming',
+        q=user_input,
         type='video',
         maxResults=5,
         videoDuration='long',
-        safeSearch='none'
-    )
+        safeSearch='none',
+        videoEmbeddable='true'
+    ) 
 
     response = req.execute()
 
-    for item in response['items']:
-        video_id = item['id']['videoId']
-        title = item['snippet']['title']
-        description = item['snippet']['description']
-        print(f'Title: {title}\nDescription: {description}\nVideo ID: {video_id}\n')
+    # Transform into a simple list of dicts.
+    videos = []
+    for item in response.get('items', []):
+        videos.append({
+            'videoId': item['id']['videoId'],
+            'title': item['snippet']['title'],
+            'description': item['snippet']['description'],
+        })
 
-    return jsonify(response)
+    # Print for debugging if you want.
+    for v in videos:
+        print(f"Title: {v['title']}\nVideo ID: {v['videoId']}\n")
+
+    return jsonify(videos)
+
+@app.route('/LoadVd', methods=['GET'])
+def Load_video():
+    return render_template('welcome.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
 
-# TO DO: Make the json data into a web page.
+
+

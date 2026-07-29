@@ -1,1 +1,66 @@
-"index file" 
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MYP</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+    <h1> Welcome To MYP </h1>
+    <p>This is a simple welcome page for the MYP application.</p>
+
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search for videos...">
+        <button id="searchButton">Search</button>
+    </div>
+
+    <div id="videos">
+        <!-- Video items will be dynamically inserted here -->
+    </div>
+
+    <script>
+        async function loadVideos(query) {
+            // Build URL with query parameter
+            const params = new URLSearchParams({ q: query });
+            const response = await fetch(`http://127.0.0.1:5000/test?${params}`);
+
+            const data = await response.json();
+
+            const container = document.getElementById('videos');
+            
+
+            data.forEach(video => {
+                const videoDiv = document.createElement('div');
+                videoDiv.className = 'video';
+
+                const title = document.createElement('h3');
+                title.textContent = video.title;
+
+                const iframe = document.createElement('iframe');
+                iframe.src = `https://www.youtube.com/embed/${video.videoId}`;
+                iframe.width = '560';
+                iframe.height = '315';
+                iframe.frameBorder = '0';
+                iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+                iframe.allowFullscreen = true;
+
+                videoDiv.appendChild(title);
+                videoDiv.appendChild(iframe);
+                container.appendChild(videoDiv);
+            });
+        }
+
+        // Hook up the button
+        document.getElementById('searchButton').addEventListener('click', () => {
+            const query = document.getElementById('searchInput').value.trim();
+            if (query) {
+                loadVideos(query);
+            }
+        });
+    </script>
+</body>
+</html>

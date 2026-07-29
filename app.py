@@ -45,6 +45,7 @@ def test():
 def Load_video():
     return render_template('welcome.html')
 
+# TO DO: Add YTT into MYP.
 if __name__ == '__main__':
     app.run(debug=True)
 

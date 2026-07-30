@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>YouTube Transcription Tool</title>
+    <link rel="stylesheet" href="/static/ytt.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>YouTube Transcription Tool</h1>
+        <p>Put your YouTube video URL in the box below.</p>
+
+        <form id="ytt-form">
+            <input type="text" name="t" id="url" placeholder="https://www.youtube.com/watch?v=..." required>
+            <button type="submit" id="submit-btn">Transcribe!</button>
+        </form>
+
+        <p id="status" class="hint"></p>
+
+        <div id="result" class="hidden">
+            <h2>Transcript Content</h2>
+            <textarea id="transcript" readonly></textarea>
+            <div class="actions">
+                <button id="copy-btn" type="button">Copy Transcript</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById("ytt-form");
+            const urlInput = document.getElementById("url");
+            const submitBtn = document.getElementById("submit-btn");
+            const statusEl = document.getElementById("status");
+            const resultEl = document.getElementById("result");
+            const transcriptArea = document.getElementById("transcript");
+            const copyBtn = document.getElementById("copy-btn");
+
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+
+                const url = urlInput.value.trim();
+                if (!url) return;
+
+                submitBtn.disabled = true;
+                submitBtn.textContent = "Transcribing...";
+                statusEl.textContent = "";
+                statusEl.className = "hint";
+                resultEl.classList.add("hidden");
+
+                try {
+                    const response = await fetch(`/YTT?t=${encodeURIComponent(url)}`);
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        statusEl.textContent = data.error || data.message || "Something went wrong.";
+                        statusEl.className = "error";
+                        return;
+                    }
+
+                    transcriptArea.value = data.transcript;
+                    resultEl.classList.remove("hidden");
+                    statusEl.textContent = `Video ID: ${data.video_id} | File #${data.file_number}`;
+                    statusEl.className = "hint";
+                } catch (err) {
+                    statusEl.textContent = "Network error: " + err.message;
+                    statusEl.className = "error";
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "Transcribe!";
+                }
+            });
+
+            copyBtn.addEventListener("click", async () => {
+                try {
+                    await navigator.clipboard.writeText(transcriptArea.value);
+                    copyBtn.textContent = "Copied!";
+                    setTimeout(() => (copyBtn.textContent = "Copy Transcript"), 1500);
+                } catch (err) {
+                    console.error("Copy failed", err);
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

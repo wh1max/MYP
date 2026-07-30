@@ -26,7 +26,7 @@
         async function loadVideos(query) {
             // Build URL with query parameter
             const params = new URLSearchParams({ q: query });
-            const response = await fetch(`http://127.0.0.1:5000/test?${params}`);
+            const response = await fetch(`http://127.0.0.1:5000/MYP?${params}`);
 
             const data = await response.json();
 
